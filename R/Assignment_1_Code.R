@@ -9,6 +9,7 @@ library(ggplot2)
 t_spiralis <- read_csv("../data/GCA_001447595.1.csv")
 t_britovi <- read_csv("../data/GCA_001447585.1.csv")
 
+# testing something now---- 
 #excluding non-TE matching classes, and adding row numbers to create unique identifier for each row, enabling exclusion of outliers
 
 ls_non_te <- c("Simple_repeat", "Low_complexity", "Satellite", "snRNA", "rRNA", "ARTEFACT", "Unknown", "simple_repeat")
