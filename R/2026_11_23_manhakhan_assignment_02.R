@@ -244,3 +244,4 @@ wilcox_comparison <- wilcox_results |>
 
 # Display comparison table
 print(wilcox_comparison, n = Inf, width = Inf)
+
