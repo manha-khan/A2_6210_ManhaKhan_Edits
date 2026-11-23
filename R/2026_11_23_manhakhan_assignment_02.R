@@ -71,22 +71,20 @@ dim(t_spiralis_out_removed) #1030
 dim(t_britovi_out_removed) #1176
 # Plot outlier detection for T. spiralis
 t_spiralis |>
-  ggplot(aes(matching_class, y = perc_div)) +geom_boxplot() + geom_hline(aes(yintercept = spiralis_results$lower_limit,colour = "Q1")) + geom_hline(aes(yintercept = spiralis_results$upper_limit,colour = "Q3")) + scale_color_manual(name = "Outlier Thresholds",values = c("Q1" = "red", "Q3" = "blue") ) +guides(x = guide_axis(angle = 45)) +labs( title = "Outlier Detection by TE Matching Class - *T. spiralis*", x = "TE Matching Class",y = "Percent Divergence") +theme(plot.title = element_markdown())
+  ggplot(aes(matching_class, y = perc_div)) +geom_boxplot() + geom_hline(aes(yintercept = spiralis_results$lower_limit,colour = "Lower Limit")) + geom_hline(aes(yintercept = spiralis_results$upper_limit,colour = "Upper Limit")) + scale_color_manual(name = "Outlier Thresholds",values = c("Lower Limit" = "red", "Upper Limit" = "blue") ) +guides(x = guide_axis(angle = 45)) +labs( title = "Outlier Detection by TE Matching Class - *T. spiralis*", x = "TE Matching Class",y = "Percent Divergence") +theme(plot.title = element_markdown())
 
 # Plot outlier detection for T. britovi
 t_britovi |>
   ggplot(aes(matching_class, y = perc_div)) + geom_boxplot() + geom_hline(aes(
-    yintercept = britovi_results$lower_limit, colour = "Q1")) + geom_hline(aes(
-      yintercept = britovi_results$upper_limit, colour = "Q3" )) + scale_color_manual(
-        name = "Outlier Thresholds", values = c("Q1" = "red", "Q3" = "blue") ) +
-  guides(x = guide_axis(angle = 45)) + labs(title = "Outlier Detection by TE Matching Class - *T. britovi*", x = "TE Matching Class", y = "Percent Divergence" ) + theme(plot.title = element_markdown())
+    yintercept = britovi_results$lower_limit, colour = "Lower Limit")) + geom_hline(aes(yintercept = britovi_results$upper_limit, colour = "Upper Limit" )) + scale_color_manual(name = "Outlier Thresholds", values = c("Lower Limit" = "red", "Upper Limit" = "blue") ) + guides(x = guide_axis(angle = 45)) + labs(title = "Outlier Detection by TE Matching Class - *T. britovi*", x = "TE Matching Class", y = "Percent Divergence" ) + theme(plot.title = element_markdown())
 
 
-# 03 Perform Wilcoxon tests: percent divergence between species, within each TA mathcing_class ----
+# 03 REVISED: Run Wilcoxon rank-sum tests on outlier-removed data to compare % divergence within matching classes ----
 
+# Combine outlier-removed species datasets and apply standard TE/value filters
 te_combined <- bind_rows(
-  t_spiralis |> mutate(species = "spiralis"),
-  t_britovi  |> mutate(species = "britovi")
+  t_spiralis_out_removed |> mutate(species = "spiralis"),
+  t_britovi_out_removed  |> mutate(species = "britovi")
 ) |>
   filter(
     !matching_class %in% ls_non_te,
@@ -130,19 +128,18 @@ wilcox_results <- te_combined |>
 
 print(wilcox_results, n = Inf)
 
-# 04 Plot average percent divergence within matching_class between t_spiralis & t_britovi using boxplots ----
+# 04 REVISED Plot average percent divergence within matching_class between t_spiralis & t_britovi using boxplots ----
 
-
-# find distribution of %div of classes in britovi
-shared_classes <- intersect(t_spiralis$matching_class, t_britovi$matching_class)
+#  find distribution of %div of classes in britovi
+shared_classes <- intersect(
+  t_spiralis_out_removed$matching_class,
+  t_britovi_out_removed$matching_class
+)
 
 te_shared <- bind_rows(
-  t_britovi  |> 
-    select(matching_class, perc_div) |> 
-    mutate(species = "T. britovi"),
-  t_spiralis |> 
-    select(matching_class, perc_div) |> 
-    mutate(species = "T. spiralis")) |>
+  t_britovi_out_removed |> select(matching_class, perc_div) |> mutate(species = "T. britovi"),
+  t_spiralis_out_removed |> select(matching_class, perc_div) |> mutate(species = "T. spiralis")
+) |> 
   filter(matching_class %in% shared_classes)
 
 te_shared |> filter(species == "T. britovi") |>
